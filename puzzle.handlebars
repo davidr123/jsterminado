@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Rompecabezas</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="Shortcut Icon" href="/images/puzzle-icon.ico" />
+        <link href="https://fonts.googleapis.com/css?family=Luckiest+Guy" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.rawgit.com/yahoo/pure-release/v0.6.0/pure-min.css">
+        <link rel="stylesheet" href="https://cdn.rawgit.com/yahoo/pure-release/v0.6.0/grids-responsive-min.css">
+        <link rel="stylesheet" href="/css/estilo.css">
+          <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body class="juego">
+        <div style="max-width:900px;padding:0 10px;margin:40px auto;text-align:center">
+            <div id="title"> Rompecabezas </div>
+            <h1 id="intentos">0</h1>
+        </div>
+        
+        <div id="puzzle-containment" style="margin:30px 0;padding:10px;text-align:center">
+            <div class="pure-g" style="max-width:1280px;margin:auto">
+                <div class="pure-u-1 pure-u-md-1-2">
+                    <div id="pile" style="margin:10px">
+                        <div id="puzzle_solved" style="display:none;text-align:center;position:relative;top:25%">
+                            <h2 style="margin:0 0 20px; color:mediumvioletred; font-family: 'Dokdo', cursive; font-size: 45px;">Bien hecho!</h2>
+                            <a class="pure-button button-lg restart-puzzle btnRestart">Jugar de nuevo</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pure-u-1 pure-u-md-1-2">
+                    <div style="margin:10px">
+                        <img id="source_image" class="pure-img" src="{{imagenes.descripcion}}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="atrasBtn">
+            <div class="game-button">
+                <a href="/front/juegos"> <img src="/images/regresar.png" width="165px"> </a>
+            </div>
+        </div>
+        <div id="puzzle-points">
+            <div id="puntaje">
+                <h3> Puntaje: &nbsp; <strong id="puntaje"> </strong> </h3> 
+            </div>
+            <!--<div id="intentos">
+                <h3> Intentos: </h3>
+            </div>!-->
+        </div>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>  
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+        <script src="/Js/jquery.snap-puzzle.js"> </script>
+          <script src="/Js/jquery.snap-puzzle.min.js"> </script>
+        <script src="/Js/main.js"> </script>
+          <script>
+
+    let url = window.origin;
+
+               let partida=localStorage.getItem("partida");
+              
+        $.getJSON( url+"/front/puntos/"+partida, function( data ) {
+
+            console.log(data)
+
+            $("#puntaje").html("<p>"+data.user.puntaje+"</p>");
+
+        });
+
+    </script>
+    <script>
+        
+        
+        /*
+	jQuery snapPuzzle v1.0.0
+    Copyright (c) 2014 Hans Braxmeier / Simon Steinberger / Pixabay
+    GitHub: https://github.com/Pixabay/jQuery-snapPuzzle
+	License: http://www.opensource.org/licenses/mit-license.php
+*/
+
+
+
+(function($){
+var intentos=0;
+    
+    $.fn.snapPuzzle = function(options){
+        var o = $.extend({ pile: '', containment: 'document', rows: 5, columns: 5, onComplete: function(){} }, options);
+
+        // public methods
+        if (typeof options == 'string') {
+            this.each(function(){
+                var that = $(this),
+                    o = that.data('options'),
+                    pieceWidth = that.width() / o.columns,
+                    pieceHeight = that.height() / o.rows,
+                    pile = $(o.pile),
+                    maxX = pile.width() - pieceWidth,
+                    maxY = pile.height() - pieceHeight,
+                    puzzle_offset = that.closest('span').offset(),
+                    pile_offset = pile.offset();
+
+                if (options == 'destroy') {
+                    $('.'+o.puzzle_class).remove();
+                    that.unwrap().removeData('options');
+                    pile.removeClass('snappuzzle-pile');
+                } else if (options == 'refresh') {
+                    $('.snappuzzle-slot.'+o.puzzle_class).each(function(){
+                        var x_y = $(this).data('pos').split('_'), x = x_y[0], y = x_y[1];
+                        $(this).css({
+                            width: pieceWidth,
+                            height: pieceHeight,
+                            left: y*pieceWidth,
+                            top: x*pieceHeight
+                        });
+                    });
+                    $('.snappuzzle-piece.'+o.puzzle_class).each(function(){
+                        if ($(this).data('slot')) {
+                            // placed on slot
+                            var x_y = $(this).data('slot').split('_'), slot_x = x_y[0], slot_y = x_y[1],
+                                x_y = $(this).data('pos').split('_'), pos_x = x_y[0], pos_y = x_y[1];;
+                            $(this).css({
+                                width: pieceWidth,
+                                height: pieceHeight,
+                                left: slot_y*pieceWidth+puzzle_offset.left-pile_offset.left,
+                                top: slot_x*pieceHeight+puzzle_offset.top-pile_offset.top,
+                                backgroundPosition: (-pos_y*pieceWidth)+'px '+(-pos_x*pieceHeight)+'px',
+                                backgroundSize: that.width()
+                            });
+                        } else {
+                            // placed anywhere else
+                            var x_y = $(this).data('pos').split('_'), x = x_y[0], y = x_y[1];
+                            $(this).css({
+                                width: pieceWidth,
+                                height: pieceHeight,
+                                left: Math.floor((Math.random()*(maxX+1))),
+                                top: Math.floor((Math.random()*(maxY+1))),
+                                backgroundPosition: (-y*pieceWidth)+'px '+(-x*pieceHeight)+'px',
+                                backgroundSize: that.width()
+                            });
+                        }
+                    });
+                }
+            });
+            return this;
+        }
+
+        function init(that){
+            var puzzle_class = 'sp_'+new Date().getTime(),
+                puzzle = that.wrap('<span class="snappuzzle-wrap"/>').closest('span'),
+                src = that.attr('src'),
+                pieceWidth = that.width() / o.columns,
+                pieceHeight = that.height() / o.rows,
+                pile = $(o.pile).addClass('snappuzzle-pile'),
+                maxX = pile.width() - pieceWidth,
+                maxY = pile.height() - pieceHeight;
+
+            o.puzzle_class = puzzle_class;
+            that.data('options', o);
+
+            for (var x=0; x<o.rows; x++) {
+                for (var y=0; y<o.columns; y++) {
+                    $('<div class="snappuzzle-piece '+puzzle_class+'"/>').data('pos', x+'_'+y).css({
+                        width: pieceWidth,
+                        height: pieceHeight,
+                        position: 'absolute',
+                        left: Math.floor((Math.random()*(maxX+1))),
+                        top: Math.floor((Math.random()*(maxY+1))),
+                        zIndex: Math.floor((Math.random()*10)+1),
+                        backgroundImage: 'url('+src+')',
+                        backgroundPosition: (-y*pieceWidth)+'px '+(-x*pieceHeight)+'px',
+                        backgroundSize: that.width()
+                    }).draggable({
+                        start: function(e, ui){$(this).removeData('slot'); },
+                        stack: '.snappuzzle-piece',
+                        containment: o.containment
+                    }).appendTo(pile).data('lastSlot', pile);
+
+                    $('<div class="snappuzzle-slot '+puzzle_class+'"/>').data('pos', x+'_'+y).css({
+                        width: pieceWidth,
+                        height: pieceHeight,
+                        left: y*pieceWidth,
+                        top: x*pieceHeight
+                    }).appendTo(puzzle).droppable({
+                        accept: '.'+puzzle_class,
+                        hoverClass: 'snappuzzle-slot-hover',
+                        drop: function(e, ui){
+                            var slot_pos = $(this).data('pos');
+                            intentos++;
+                            //alert(intentos);
+                            $('#intentos').html(intentos);
+                            // prevent dropping multiple pieces on one slot
+                            $('.snappuzzle-piece.'+puzzle_class).each(function(){
+                                if ($(this).data('slot') == slot_pos) slot_pos = false;
+                            });
+                            if (!slot_pos) return false;
+
+                            ui.draggable.data('lastSlot', $(this)).data('slot', slot_pos);
+                            ui.draggable.position({ of: $(this), my: 'left top', at: 'left top' });
+                            if (ui.draggable.data('pos')==slot_pos) {
+                                ui.draggable.addClass('correct');
+                                // fix piece
+                                // $(this).droppable('disable').fadeIn().fadeOut();
+                                $(this).droppable('disable').css('opacity', 1).fadeOut(1000);
+                                ui.draggable.css({opacity: 0, cursor: 'default'}).draggable('disable');
+                                if ($('.snappuzzle-piece.correct.'+puzzle_class).length == o.rows*o.columns) {
+                                    alert("Ganaste");
+                                    var piezas=parseInt(localStorage.getItem("numpiezas"));
+                                    piezas=piezas+4;
+                                    alert(piezas +" . "+intentos);
+                                    if(intentos <= piezas){
+                                        alert("GAnastes ptos")
+                                    }
+                                    let url = window.origin;
+                                     o.onComplete(that);
+                                        $.post( url+"/front/puntos/"+localStorage.getItem("partida"), function( data ) {
+                                            console.log( url+"/front/puntos/"+localStorage.getItem("partida"))
+                                            //console.log(data)
+                                            //$("#puntaje").html("<p>"+data.user.puntaje+"</p>");
+                                
+                                        });
+                                    
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        return this.each(function(){
+            if (this.complete) init($(this));
+            else $(this).load(function(){ init($(this)); });
+        });
+    };
+}(jQuery));
+        
+        
+    </script>
+
+    </body>
+</html>
